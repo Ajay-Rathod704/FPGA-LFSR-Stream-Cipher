@@ -1,0 +1,29 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Engine: 8-bit Linear Feedback Shift Register (LFSR)
+// Polynomial: x^8 + x^6 + x^5 + x^4 + 1
+// Description: Generates a Maximum Length Sequence (MLS) of 255 pseudorandom states.
+//////////////////////////////////////////////////////////////////////////////////
+
+module lfsr_8bit (
+    input wire clk,
+    input wire reset,
+    input wire enable,
+    output reg [7:0] lfsr_out
+);
+
+    // Feedback bit calculation based on feedback polynomial coefficients
+    // Tap points: Bits 7, 5, 4, 3 (corresponding to x^8 + x^6 + x^5 + x^4 + 1)
+    wire feedback = lfsr_out[7] ^ lfsr_out[5] ^ lfsr_out[4] ^ lfsr_out[3];
+
+    always @(posedge clk or posedge reset) begin
+        if (reset) begin
+            // Non-zero seed initialization (prevents lockup in zero state)
+            lfsr_out <= 8'hA5; 
+        end else if (enable) begin
+            // Shift left and insert feedback bit at LSB
+            lfsr_out <= {lfsr_out[6:0], feedback};
+        end
+    end
+
+endmodule
